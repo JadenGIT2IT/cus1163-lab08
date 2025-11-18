@@ -48,39 +48,98 @@ public class MemoryAllocationLab {
      *   - For RELEASE: find the process's block and mark it as free
      *   - Optionally: merge adjacent free blocks (bonus)
      */
-    public static void processRequests(String filename) {
-        memory = new ArrayList<>();
+   public void processRequests(String filename) {
+    System.out.println("Reading from: " + filename);
 
-        // TODO 1: Read file and initialize memory
-        // Try-catch block to handle file reading
-        // Read first line for total memory size
-        // Create initial free block: new MemoryBlock(0, totalMemory, null)
-        // Read remaining lines in a loop
-        // Parse each line and call allocate() or deallocate()
+    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
+        // ---- Read total memory size ----
+        int totalMemory = Integer.parseInt(br.readLine().trim());
+        System.out.println("Total Memory: " + totalMemory + " KB");
+        System.out.println("----------------------------------------");
+        System.out.println("\nProcessing requests...\n");
 
-        // TODO 2: Implement these helper methods
+        // Initialize memory with one big free block
+        memory.clear();
+        memory.add(new MemoryBlock(0, totalMemory, null));
 
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.trim().isEmpty()) continue;
+
+            String[] parts = line.split(" ");
+            String command = parts[0];
+
+            if (command.equalsIgnoreCase("REQUEST")) {
+                String processName = parts[1];
+                int size = Integer.parseInt(parts[2]);
+                allocate(processName, size);
+            } else if (command.equalsIgnoreCase("RELEASE")) {
+                String processName = parts[1];
+                deallocate(processName);
+            }
+        }
+
+    } catch (IOException e) {
+        System.out.println("Error reading file: " + e.getMessage());
     }
-
+}
     /**
      * TODO 2A: Allocate memory using First-Fit
      */
-    private static void allocate(String processName, int size) {
-        // Search through memory list
-        // Find first free block where size >= requested size
-        // If found:
-        //   - Mark block as allocated (set processName)
-        //   - If block is larger than needed, split it:
-        //     * Create new free block for remaining space
-        //     * Add it to memory list after current block
-        //   - Increment successfulAllocations
-        //   - Print success message
-        // If not found:
-        //   - Increment failedAllocations
-        //   - Print failure message
+    public void allocate(String processName, int size) {
+    for (int i = 0; i < memory.size(); i++) {
+        MemoryBlock block = memory.get(i);
 
+        // Check: block is free AND large enough
+        if (block.isFree() && block.size >= size) {
+
+            // --- Found our First-Fit block ---
+            int remaining = block.size - size;
+
+            // Allocate the block
+            block.processName = processName;
+            block.size = size;
+
+            // If unused space exists → split block
+            if (remaining > 0) {
+                MemoryBlock freeBlock = new MemoryBlock(
+                        block.start + size,
+                        remaining,
+                        null
+                );
+                memory.add(i + 1, freeBlock);
+            }
+
+            successfulAllocations++;
+            System.out.println("REQUEST " + processName + " " + size + " KB → SUCCESS");
+            return;
+        }
     }
+
+    // No block found
+    failedAllocations++;
+    System.out.println("REQUEST " + processName + " " + size + " KB → FAILED (insufficient memory)");
+} 
+    public void deallocate(String processName) {
+    for (int i = 0; i < memory.size(); i++) {
+        MemoryBlock block = memory.get(i);
+
+        if (!block.isFree() && block.processName.equals(processName)) {
+
+            // Mark the block as free
+            block.processName = null;
+            System.out.println("RELEASE " + processName + " → SUCCESS");
+
+            // Optional but recommended: merge adjacent free blocks
+            mergeFreeBlocks();
+
+            return;
+        }
+    }
+
+    System.out.println("RELEASE " + processName + " → FAILED (process not found)");
+}
 
     public static void displayStatistics() {
         System.out.println("\n========================================");

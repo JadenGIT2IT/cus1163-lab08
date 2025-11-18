@@ -84,24 +84,23 @@ public class MemoryAllocationLab {
         System.out.println("Error reading file: " + e.getMessage());
     }
 }
+
     /**
      * TODO 2A: Allocate memory using First-Fit
      */
-    public void allocate(String processName, int size) {
+   public void allocate(String processName, int size) {
     for (int i = 0; i < memory.size(); i++) {
         MemoryBlock block = memory.get(i);
 
-        // Check: block is free AND large enough
         if (block.isFree() && block.size >= size) {
 
-            // --- Found our First-Fit block ---
             int remaining = block.size - size;
 
-            // Allocate the block
+            // Allocate block
             block.processName = processName;
             block.size = size;
 
-            // If unused space exists → split block
+            // If leftover space, split
             if (remaining > 0) {
                 MemoryBlock freeBlock = new MemoryBlock(
                         block.start + size,
@@ -117,29 +116,25 @@ public class MemoryAllocationLab {
         }
     }
 
-    // No block found
     failedAllocations++;
     System.out.println("REQUEST " + processName + " " + size + " KB → FAILED (insufficient memory)");
-} 
-    public void deallocate(String processName) {
+}
+
+   public void deallocate(String processName) {
     for (int i = 0; i < memory.size(); i++) {
         MemoryBlock block = memory.get(i);
 
         if (!block.isFree() && block.processName.equals(processName)) {
 
-            // Mark the block as free
-            block.processName = null;
+            block.processName = null;  // mark as free
             System.out.println("RELEASE " + processName + " → SUCCESS");
-
-            // Optional but recommended: merge adjacent free blocks
-            mergeFreeBlocks();
-
             return;
         }
     }
 
     System.out.println("RELEASE " + processName + " → FAILED (process not found)");
 }
+
 
     public static void displayStatistics() {
         System.out.println("\n========================================");

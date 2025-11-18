@@ -207,4 +207,5 @@ public class MemoryAllocationLab {
     lab.processRequests(args[0]);
     lab.displayStatistics();
 }
+}
 

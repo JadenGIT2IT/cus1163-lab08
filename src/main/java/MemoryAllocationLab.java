@@ -48,19 +48,16 @@ public class MemoryAllocationLab {
      *   - For RELEASE: find the process's block and mark it as free
      *   - Optionally: merge adjacent free blocks (bonus)
      */
-   public static void processRequests(String filename) {
-    System.out.println("Reading from: " + filename);
-
+   public void processRequests(String filename) {
     try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
-        // ---- Read total memory size ----
-        int totalMemory = Integer.parseInt(br.readLine().trim());
+        // Read total memory
+        totalMemory = Integer.parseInt(br.readLine().trim());
         System.out.println("Total Memory: " + totalMemory + " KB");
         System.out.println("----------------------------------------");
         System.out.println("\nProcessing requests...\n");
 
-        // Initialize memory with one big free block
-        memory.clear();
+        // Initial memory: one big free block
         memory.add(new MemoryBlock(0, totalMemory, null));
 
         String line;
@@ -68,13 +65,12 @@ public class MemoryAllocationLab {
             if (line.trim().isEmpty()) continue;
 
             String[] parts = line.split(" ");
-            String command = parts[0];
 
-            if (command.equalsIgnoreCase("REQUEST")) {
+            if (parts[0].equals("REQUEST")) {
                 String processName = parts[1];
                 int size = Integer.parseInt(parts[2]);
                 allocate(processName, size);
-            } else if (command.equalsIgnoreCase("RELEASE")) {
+            } else if (parts[0].equals("RELEASE")) {
                 String processName = parts[1];
                 deallocate(processName);
             }
@@ -94,20 +90,17 @@ public class MemoryAllocationLab {
 
         if (block.isFree() && block.size >= size) {
 
+            // FOUND FIRST-FIT BLOCK
             int remaining = block.size - size;
 
-            // Allocate block
-            block.processName = processName;
+            // Turn this block into allocated
             block.size = size;
+            block.processName = processName;
 
-            // If leftover space, split
+            // If leftover space exists, create a new free block
             if (remaining > 0) {
-                MemoryBlock freeBlock = new MemoryBlock(
-                        block.start + size,
-                        remaining,
-                        null
-                );
-                memory.add(i + 1, freeBlock);
+                MemoryBlock leftover = new MemoryBlock(block.start + size, remaining, null);
+                memory.add(i + 1, leftover);
             }
 
             successfulAllocations++;
@@ -116,23 +109,24 @@ public class MemoryAllocationLab {
         }
     }
 
+    // No suitable block found
     failedAllocations++;
-    System.out.println("REQUEST " + processName + " " + size + " KB → FAILED (insufficient memory)");
+    System.out.println("REQUEST " + processName + " " + size + " KB → FAILED (Insufficient Memory)");
 }
 
-   public void deallocate(String processName) {
-    for (int i = 0; i < memory.size(); i++) {
-        MemoryBlock block = memory.get(i);
 
+   public void deallocate(String processName) {
+    for (MemoryBlock block : memory) {
         if (!block.isFree() && block.processName.equals(processName)) {
 
-            block.processName = null;  // mark as free
+            block.processName = null; // Now free
+
             System.out.println("RELEASE " + processName + " → SUCCESS");
             return;
         }
     }
 
-    System.out.println("RELEASE " + processName + " → FAILED (process not found)");
+    System.out.println("RELEASE " + processName + " → FAILED (Process Not Found)");
 }
 
 

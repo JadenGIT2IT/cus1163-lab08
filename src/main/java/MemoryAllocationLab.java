@@ -192,18 +192,19 @@ public class MemoryAllocationLab {
      * Main method (FULLY PROVIDED)
      */
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Usage: java MemoryAllocationLab <input_file>");
-            System.out.println("Example: java MemoryAllocationLab memory_requests.txt");
-            return;
-        }
-
-        System.out.println("========================================");
-        System.out.println("Memory Allocation Simulator (First-Fit)");
-        System.out.println("========================================\n");
-        System.out.println("Reading from: " + args[0]);
-
-        processRequests(args[0]);
-        displayStatistics();
+    if (args.length < 1) {
+        System.out.println("Usage: java MemoryAllocationLab <input_file>");
+        System.out.println("Example: java MemoryAllocationLab memory_requests.txt");
+        return;
     }
+
+    System.out.println("========================================");
+    System.out.println("Memory Allocation Simulator (First-Fit)");
+    System.out.println("========================================\n");
+    System.out.println("Reading from: " + args[0]);
+
+    MemoryAllocationLab lab = new MemoryAllocationLab();
+    lab.processRequests(args[0]);
+    lab.displayStatistics();
 }
+

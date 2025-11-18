@@ -48,7 +48,7 @@ public class MemoryAllocationLab {
      *   - For RELEASE: find the process's block and mark it as free
      *   - Optionally: merge adjacent free blocks (bonus)
      */
-   public void processRequests(String filename) {
+   public static void processRequests(String filename) {
     System.out.println("Reading from: " + filename);
 
     try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
